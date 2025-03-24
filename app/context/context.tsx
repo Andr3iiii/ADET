@@ -1,16 +1,14 @@
 import React, { createContext, useState, ReactNode } from "react";
 
-// Create context
 export const Context = createContext<any>(null);
 
-// Provider component
 export const ContextProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const [player1Score, setPlayer1Score] = useState(0);
   const [player2Score, setPlayer2Score] = useState(0);
   const [winner, setWinner] = useState<string | null>(null);
-  const [gameTime, setGameTime] = useState(10); // Countdown duration
+  const [gameTime, setGameTime] = useState(10);
 
   const resetGame = () => {
     setPlayer1Score(0);
