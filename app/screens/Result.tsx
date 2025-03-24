@@ -1,26 +1,28 @@
 import React, { useContext } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { Context } from "../context/context";
 import { useNavigation } from "@react-navigation/native";
+import { Context } from "../context/context";
 
 const Result: React.FC = () => {
+  const navigation = useNavigation<any>();
   const gameContext = useContext(Context);
   if (!gameContext)
     throw new Error("Result must be used within ContextProvider");
 
-  const { winner, resetGame } = gameContext;
-  const navigation = useNavigation();
+  const { player1Score, player2Score, winner, resetGame } = gameContext;
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Game Over!</Text>
       <Text style={styles.winner}>🏆 Winner: {winner} 🏆</Text>
+      <Text style={styles.score}>Player 1: {player1Score} taps</Text>
+      <Text style={styles.score}>Player 2: {player2Score} taps</Text>
 
       <TouchableOpacity
         style={styles.button}
         onPress={() => {
           resetGame();
-          navigation.navigate("home");
+          navigation.navigate("Temp");
         }}
       >
         <Text style={styles.buttonText}>Play Again</Text>
@@ -38,6 +40,7 @@ const styles = StyleSheet.create({
     color: "green",
     marginBottom: 10,
   },
+  score: { fontSize: 20, marginBottom: 5 },
   button: {
     backgroundColor: "blue",
     padding: 15,

@@ -1,108 +1,83 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { Context } from "../context/context";
 import { useNavigation } from "@react-navigation/native";
+import { Context } from "../context/context";
 
 const Game: React.FC = () => {
+  const navigation = useNavigation<any>();
   const gameContext = useContext(Context);
   if (!gameContext) throw new Error("Game must be used within ContextProvider");
 
   const {
     player1Score,
-    player2Score,
     setPlayer1Score,
+    player2Score,
     setPlayer2Score,
     setWinner,
+    gameTime,
+    setGameTime,
   } = gameContext;
-  const navigation = useNavigation();
-  const [countdown, setCountdown] = useState(5);
-  const [gameStarted, setGameStarted] = useState(false);
+
+  const [isPlaying, setIsPlaying] = useState(true);
 
   useEffect(() => {
-    let count = 5;
-    setCountdown(5);
-    setGameStarted(false);
+    if (gameTime === 0) {
+      setWinner(player1Score > player2Score ? "Player 1" : "Player 2");
+      setIsPlaying(false);
+      setTimeout(() => navigation.navigate("Result"), 1000);
+      return;
+    }
 
-    const countdownInterval = setInterval(() => {
-      count -= 1;
-      setCountdown(count);
-      if (count === 0) {
-        clearInterval(countdownInterval);
-        setGameStarted(true);
-      }
+    const timer = setInterval(() => {
+      setGameTime((prev: number) => prev - 1);
     }, 1000);
 
-    return () => clearInterval(countdownInterval);
-  }, []);
-
-  const handleTap = (player: "player1" | "player2") => {
-    if (!gameStarted) return;
-
-    if (player === "player1") setPlayer1Score((prev) => prev + 1);
-    else setPlayer2Score((prev) => prev + 1);
-  };
-
-  useEffect(() => {
-    if (player1Score >= 10 || player2Score >= 10) {
-      setGameStarted(false);
-      setWinner(player1Score > player2Score ? "Player 1" : "Player 2");
-      navigation.navigate("Result");
-    }
-  }, [player1Score, player2Score]);
+    return () => clearInterval(timer);
+  }, [gameTime]);
 
   return (
     <View style={styles.container}>
-      {countdown > 0 ? (
-        <Text style={styles.countdown}>Starting in: {countdown}</Text>
-      ) : (
-        <Text style={styles.title}>TAP FAST!</Text>
-      )}
+      <Text style={styles.timer}>Time Left: {gameTime}s</Text>
 
       <View style={styles.buttonRow}>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => handleTap("player1")}
-        >
-          <Text style={styles.buttonText}>Player 1</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => handleTap("player2")}
-        >
-          <Text style={styles.buttonText}>Player 2</Text>
-        </TouchableOpacity>
-      </View>
+        <View style={styles.playerContainer}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => isPlaying && setPlayer1Score(player1Score + 1)}
+          >
+            <Text style={styles.buttonText}>Player 1</Text>
+          </TouchableOpacity>
+          <Text style={styles.score}>Taps: {player1Score}</Text>
+        </View>
 
-      <Text style={styles.score}>Player 1: {player1Score}</Text>
-      <Text style={styles.score}>Player 2: {player2Score}</Text>
+        <View style={styles.playerContainer}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => isPlaying && setPlayer2Score(player2Score + 1)}
+          >
+            <Text style={styles.buttonText}>Player 2</Text>
+          </TouchableOpacity>
+          <Text style={styles.score}>Taps: {player2Score}</Text>
+        </View>
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#f5f5f5",
-  },
-  countdown: {
-    fontSize: 40,
-    fontWeight: "bold",
-    color: "red",
-    marginBottom: 20,
-  },
-  title: { fontSize: 28, fontWeight: "bold", marginBottom: 20 },
+  container: { flex: 1, justifyContent: "center", alignItems: "center" },
+  timer: { fontSize: 24, fontWeight: "bold", marginBottom: 20 },
   buttonRow: {
     flexDirection: "row",
     justifyContent: "space-around",
     width: "100%",
   },
+  playerContainer: { alignItems: "center" },
   button: {
     backgroundColor: "#007bff",
     padding: 20,
     borderRadius: 10,
-    width: 130,
+    width: 120,
     alignItems: "center",
   },
   buttonText: { color: "white", fontSize: 20, fontWeight: "bold" },
